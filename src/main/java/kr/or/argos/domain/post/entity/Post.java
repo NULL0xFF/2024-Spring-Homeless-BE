@@ -8,6 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
+import kr.or.argos.domain.comment.entity.Comment;
 import kr.or.argos.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,6 +28,9 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -49,5 +56,10 @@ public class Post {
         this.title = title;
         this.content = content;
         this.hits = hits;
+    }
+
+    public void addComment(final Comment comment) {
+        comment.setPost(this);
+        this.comments.add(comment);
     }
 }

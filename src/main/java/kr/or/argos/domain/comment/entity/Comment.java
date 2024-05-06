@@ -1,12 +1,22 @@
 package kr.or.argos.domain.comment.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import kr.or.argos.domain.common.BaseEntity;
+import kr.or.argos.domain.post.entity.Post;
 import kr.or.argos.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "comments")
@@ -23,44 +33,34 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "is_secret", nullable = false)
-    private boolean isSecret;
-
-    // Not implement now.
-    // @Column(name = "password", length = 80)
-    // private String password;
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
     @Column(columnDefinition = "TEXT", name = "content", nullable = false)
     private String content;
 
-    @Column(name = "status", nullable = false)
-    private Integer status;  // Need to be replaced to ENUM.
+    private long parentId;
 
-    public User getUser() {
-        return this.user;
-    }
+//    @Column(name = "is_secret", nullable = false)
+//    private boolean isSecret;
 
-    public boolean getIsSecret() {
-        return this.isSecret;
-    }
+//     Not implement now.
+//     @Column(name = "password", length = 80)
+//     private String password;
 
-    public String getContent() {
-        return this.content;
-    }
-
-    public Integer status() {
-        return this.status;
-    }
-
-    @Builder
     // @AllArgsConstructor annotation is dangerous.
+    @Builder
     private Comment(
-        final boolean isSecret, 
-        final String content, 
-        final Integer status
+            final User user,
+            final Post post,
+            final String content,
+            final long parentId
     ) {
-        this.isSecret = isSecret;
+        this.user = user;
+        this.post = post;
         this.content = content;
-        this.status = status;
+        this.parentId = parentId;
     }
 }
