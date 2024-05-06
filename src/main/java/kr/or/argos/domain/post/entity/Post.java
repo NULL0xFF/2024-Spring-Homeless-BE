@@ -12,7 +12,7 @@ import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 import kr.or.argos.domain.comment.entity.Comment;
-import kr.or.argos.domain.user.entity.User;
+import kr.or.argos.domain.member.entity.Member;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -33,8 +33,8 @@ public class Post {
     private List<Comment> comments = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(length = 200, nullable = false)
     private String title;
@@ -47,12 +47,12 @@ public class Post {
 
     @Builder
     private Post(
-            final User user,
+            final Member member,
             final String title,
             final String content,
             final long hits
     ) {
-        this.user = user;
+        this.member = member;
         this.title = title;
         this.content = content;
         this.hits = hits;

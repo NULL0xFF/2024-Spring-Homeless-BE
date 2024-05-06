@@ -1,4 +1,4 @@
-package kr.or.argos.domain.user.entity;
+package kr.or.argos.domain.member.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = {"id"}, callSuper = false)
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,18 +38,18 @@ public class User extends BaseEntity {
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
-    private UserStatus status;
+    private MemberStatus status;
 
     @Column(length = 2000)
     private String profileImageUrl;
 
     @Builder
-    private User(
+    private Member(
             final String webId,
             final String password,
             final String studentNumber,
             final String name,
-            final UserStatus status,
+            final MemberStatus status,
             final String profileImageUrl
     ) {
         this.webId = webId;
