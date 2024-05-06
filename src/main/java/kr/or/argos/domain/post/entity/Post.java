@@ -30,19 +30,14 @@ public class Post {
     @Column(nullable = false)
     private long hits;
 
-    @Column(nullable = false)
-    private boolean titleBold;
-
     @Builder
     private Post(
             final String title,
             final String content,
-            final long hits,
-            final boolean titleBold
+            final long hits
     ) {
         this.title = title;
         this.content = content;
         this.hits = hits;
-        this.titleBold = titleBold;
     }
 }
