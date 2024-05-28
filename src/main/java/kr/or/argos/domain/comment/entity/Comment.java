@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import kr.or.argos.domain.common.BaseEntity;
+import kr.or.argos.domain.common.entity.BaseEntity;
 import kr.or.argos.domain.post.entity.Post;
 import kr.or.argos.domain.user.entity.User;
 import lombok.AccessLevel;
