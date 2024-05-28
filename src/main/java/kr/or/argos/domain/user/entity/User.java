@@ -1,62 +1,89 @@
 package kr.or.argos.domain.user.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.List;
 import kr.or.argos.domain.common.entity.BaseEntity;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-@Getter
+@Data
 @Entity
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = {"id"}, callSuper = false)
-public class User extends BaseEntity {
+@AllArgsConstructor
+@Table(name = "users")
+public class User extends BaseEntity implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @NotNull
+  private String username;
 
-    @Column(length = 15, nullable = false)
-    private String webId;
+  @NotNull
+  private String password;
 
-    @Column(length = 20, nullable = false)
-    private String password;
+  @NotNull
+  private Integer studentId;
 
-    @Column(length = 10, nullable = false)
-    private String studentNumber;
+  @NotNull
+  private String name;
 
-    @Column(length = 15, nullable = false)
-    private String name;
+  @ManyToOne
+  @Builder.Default
+  @JoinColumn(name = "group_id")
+  private Group group = Group.getDefaultGroup();
 
-    @Enumerated(value = EnumType.STRING)
-    @Column(nullable = false)
-    private UserStatus status;
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of();
+  }
 
-    @Column(length = 2000)
-    private String profileImageUrl;
+  @Override
+  public boolean isAccountNonExpired() {
+    // TODO: 계정 만료 여부 확인
+    return true;
+  }
 
-    @Builder
-    private User(
-            final String webId,
-            final String password,
-            final String studentNumber,
-            final String name,
-            final UserStatus status,
-            final String profileImageUrl
-    ) {
-        this.webId = webId;
-        this.password = password;
-        this.studentNumber = studentNumber;
-        this.name = name;
-        this.status = status;
-        this.profileImageUrl = profileImageUrl;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    // TODO: 계정 잠금 여부 확인
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    // TODO: 자격 증명 만료 여부 확인
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    // TODO: 계정 활성화 여부 확인
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    // @formatter:off
+    return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+        .append("id", getId())
+        .append("username", username)
+        .append("studentId", studentId)
+        .append("name", name)
+        .append("group", group.getName())
+        .append("createdAt", getCreatedAt())
+        .append("updatedAt", getUpdatedAt())
+        .toString();
+    // @formatter:on
+  }
 }
