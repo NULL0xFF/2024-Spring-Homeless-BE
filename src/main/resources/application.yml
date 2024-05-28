@@ -1,14 +1,21 @@
 spring:
+  config:
+    import: file:./.env[.properties]
   application:
-    name: argos
+    name: ARGOS Homeless
+  sql:
+    init:
+      encoding: UTF-8
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}/${DB_DATABASE}
+    username: ${DB_USER}
+    password: ${DB_PASS}
   h2:
     console:
       enabled: true
   jpa:
     hibernate:
       ddl-auto: create
+    open-in-view: true
+    show-sql: true

@@ -29,6 +29,7 @@ out/
 !**/src/test/**/out/
 !.idea/codeStyles/
 !.idea/runConfigurations/
+!.idea/dataSources.xml
 
 ### NetBeans ###
 /nbproject/private/
