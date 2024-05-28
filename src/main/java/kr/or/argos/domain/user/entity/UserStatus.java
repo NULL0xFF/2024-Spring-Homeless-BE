@@ -1,9 +1,9 @@
-package kr.or.argos.domain.member.entity;
+package kr.or.argos.domain.user.entity;
 
 import lombok.Getter;
 
 @Getter
-public enum MemberStatus {
+public enum UserStatus {
 
     NOT_GRANTED(0),
     GENERAL(1),
@@ -12,7 +12,7 @@ public enum MemberStatus {
 
     private int statusNumber;
 
-    MemberStatus(final int statusNumber) {
+    UserStatus(final int statusNumber) {
         this.statusNumber = statusNumber;
     }
 }

@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import kr.or.argos.domain.common.BaseEntity;
-import kr.or.argos.domain.member.entity.Member;
 import kr.or.argos.domain.post.entity.Post;
+import kr.or.argos.domain.user.entity.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -31,7 +31,7 @@ public class Comment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Member member;
+    private User user;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,12 +53,12 @@ public class Comment extends BaseEntity {
     // @AllArgsConstructor annotation is dangerous.
     @Builder
     private Comment(
-            final Member member,
+            final User user,
             final Post post,
             final String content,
             final long parentId
     ) {
-        this.member = member;
+        this.user = user;
         this.post = post;
         this.content = content;
         this.parentId = parentId;

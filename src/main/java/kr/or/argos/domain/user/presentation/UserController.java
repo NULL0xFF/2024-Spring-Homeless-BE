@@ -1,4 +1,4 @@
-package kr.or.argos.domain.member.presentation;
+package kr.or.argos.domain.user.presentation;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("users")
-public class MemberController {
+public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity getMethodName(@PathVariable(name = "userId") Long userId) {
