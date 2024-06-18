@@ -1,47 +1,50 @@
 package kr.or.argos.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import kr.or.argos.domain.common.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.springframework.security.core.GrantedAuthority;
 
-@Data
+@JsonIncludeProperties({"name", "description"})
+@Getter
+@Setter
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "groups")
-public class Group extends BaseEntity {
+public class Group extends BaseEntity implements GrantedAuthority {
 
-  @Getter
-  private static final Group defaultGroup = Group
-      .builder()
-      .name("DEFAULT")
-      .description("기본 그룹")
-      .roles(List.of())
-      .build();
-
-  @NotNull
   @Column(unique = true)
+  @NotNull
   private String name;
-
   @NotNull
   private String description;
+  @JsonBackReference
+  @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private Set<UserGroup> userGroups = new HashSet<>();
 
-  @NotNull
-  @OneToMany(mappedBy = "group")
-  private List<GroupRole> roles;
+  @Override
+  public String getAuthority() {
+    return name;
+  }
 
   @Override
   public String toString() {
@@ -50,11 +53,8 @@ public class Group extends BaseEntity {
     builder
         .append("id", getId())
         .append("name", name)
-        .append("description", description);
-    // @formatter:on
-    roles.forEach(role -> builder.append("role", role.getName()));
-    // @formatter:off
-    builder.append("createdAt", getCreatedAt())
+        .append("description", description)
+        .append("createdAt", getCreatedAt())
         .append("updatedAt", getUpdatedAt());
     // @formatter:on
     return builder.toString();
