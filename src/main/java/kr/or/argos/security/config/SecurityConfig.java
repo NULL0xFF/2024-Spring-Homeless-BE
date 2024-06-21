@@ -2,7 +2,7 @@ package kr.or.argos.security.config;
 
 import kr.or.argos.domain.user.service.GroupService;
 import kr.or.argos.security.filter.JwtRequestFilter;
-import kr.or.argos.security.provider.JwtProvider;
+import kr.or.argos.security.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +37,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, JwtProvider jwtProvider)
+  public SecurityFilterChain filterChain(HttpSecurity http, TokenService tokenService)
       throws Exception {
     // @formatter:off
     http
@@ -57,7 +57,7 @@ public class SecurityConfig {
             exception
                 .accessDeniedHandler(accessDeniedHandler())
         )
-        .addFilterBefore(new JwtRequestFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(new JwtRequestFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
     // @formatter:on
     return http.build();
   }
