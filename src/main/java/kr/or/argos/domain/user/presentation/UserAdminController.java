@@ -49,9 +49,9 @@ public class UserAdminController {
       @ApiResponse(responseCode = "200", description = "Get user information successful", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> getUserByUsername(HttpServletRequest servlet,
+  public ResponseEntity<User> getUserDetails(HttpServletRequest servlet,
       @PathVariable String username) {
-    return ResponseEntity.ok(userService.getUserByUsername(servlet, username));
+    return ResponseEntity.ok(userService.getUserByAdmin(servlet, username));
   }
 
   @PatchMapping("/update")
@@ -61,8 +61,9 @@ public class UserAdminController {
       @ApiResponse(responseCode = "200", description = "Update user information successful", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> updateUserByAdmin(@RequestBody UserUpdate request) {
-    return ResponseEntity.ok(userService.updateUserByAdmin(request));
+  public ResponseEntity<User> updateUser(HttpServletRequest servlet,
+      @RequestBody UserUpdate request) {
+    return ResponseEntity.ok(userService.updateUserByAdmin(servlet, request));
   }
 
   @DeleteMapping("/resign/{username}")
@@ -71,7 +72,7 @@ public class UserAdminController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Resign successful", content = @Content),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<Void> resignUserByAdmin(HttpServletRequest servlet,
+  public ResponseEntity<Void> resignUser(HttpServletRequest servlet,
       @PathVariable String username) {
     userService.resignUserByAdmin(servlet, username);
     return ResponseEntity.ok().build();

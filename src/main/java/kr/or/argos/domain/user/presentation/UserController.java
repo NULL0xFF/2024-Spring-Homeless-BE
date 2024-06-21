@@ -14,7 +14,7 @@ import kr.or.argos.domain.user.dto.UserRegistration;
 import kr.or.argos.domain.user.dto.UserUpdate;
 import kr.or.argos.domain.user.entity.User;
 import kr.or.argos.domain.user.service.UserService;
-import kr.or.argos.security.dto.Jwt;
+import kr.or.argos.security.dto.TokenString;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,7 +40,7 @@ public class UserController {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Register successful", content = {
-          @Content(mediaType = "plain/text", schema = @Schema(implementation = Jwt.class))}),
+          @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
   public ResponseEntity<String> registerUser(@RequestBody UserRegistration request) {
     return ResponseEntity.ok(userService.registerUser(request).toString());
@@ -53,10 +53,10 @@ public class UserController {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Login successful", content = {
-          @Content(mediaType = "plain/text", schema = @Schema(implementation = Jwt.class))}),
+          @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
   public ResponseEntity<String> loginUser(@RequestBody UserLogin request) {
-    return ResponseEntity.ok(userService.loginUser(request).toString());
+    return ResponseEntity.ok(userService.loginUser(request).toTokenString().toString());
   }
 
   @GetMapping("/refresh")
@@ -67,10 +67,11 @@ public class UserController {
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Refresh token successful", content = {
-          @Content(mediaType = "plain/text", schema = @Schema(implementation = Jwt.class))}),
+          @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<String> refreshJwt(HttpServletRequest servlet) {
-    return ResponseEntity.ok(userService.refreshJwt(servlet.getRemoteUser()).toString());
+  public ResponseEntity<String> refreshToken(HttpServletRequest servlet) {
+    return ResponseEntity.ok(
+        userService.refreshToken(servlet.getRemoteUser()).toTokenString().toString());
   }
 
   @GetMapping("/me")
@@ -84,7 +85,7 @@ public class UserController {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
   public ResponseEntity<User> getUserDetails(HttpServletRequest servlet) {
-    return ResponseEntity.ok(userService.getUserDetails(servlet));
+    return ResponseEntity.ok(userService.getUserByUsername(servlet.getRemoteUser()));
   }
 
   @PatchMapping("/update")
