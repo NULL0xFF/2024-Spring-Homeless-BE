@@ -14,10 +14,17 @@ public class UserDeletion implements UserRequest {
   @NotBlank(message = "Username cannot be blank.")
   private String username;
 
+  @NotNull(message = "Enter the password to delete.")
+  @NotBlank(message = "Password cannot be blank.")
+  private String password;
+
   @Override
   public void validate() {
     if (username == null || username.isEmpty()) {
       throw new InvalidRequestException("Username is missing");
+    }
+    if (password == null || password.isEmpty()) {
+      throw new InvalidRequestException("Password is missing");
     }
   }
 }

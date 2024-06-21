@@ -1,6 +1,7 @@
 package kr.or.argos.domain.user.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kr.or.argos.domain.user.dto.UserDeletion;
 import kr.or.argos.domain.user.dto.UserLogin;
 import kr.or.argos.domain.user.dto.UserRegistration;
 import kr.or.argos.domain.user.dto.UserUpdate;
@@ -31,27 +32,28 @@ public class UserService {
   private final JwtProvider tokenProvider;
   private final PasswordEncoder encoder;
 
-  public Jwt register(UserRegistration request) {
-    // 사용자명 중복 확인
+  public Jwt registerUser(UserRegistration request) {
+    // Check if the username already exists
     if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-      throw new InvalidRequestException("username already exists");
-    }    // 요청으로부터 사용자 생성
+      throw new InvalidRequestException("Username already exists");
+    }
+    // Create a new user from the registration request
     User user = userRepository.save(request.toEntity(encoder));
-    // 기본 그룹 추가
+    // Add the user to the default group
     UserGroup userGroup = UserGroup.builder().user(user).group(groupService.getUserGroup()).build();
     user.getUserGroups().add(userGroup);
-    // 사용자 저장 후 토큰 생성
+    // Save the user and generate a JWT
     return tokenProvider.createToken(userRepository.save(user));
   }
 
-  @Transactional(readOnly = true)
-  public Jwt login(UserLogin request) {
+  @Transactional
+  public Jwt loginUser(UserLogin request) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
     return tokenProvider.createToken(userDetailsService.loadUserByUsername(request.getUsername()));
   }
 
-  public User update(HttpServletRequest servlet, UserUpdate info) {
+  public User updateUser(HttpServletRequest servlet, UserUpdate info) {
     User user = (User) userDetailsService.loadUserByUsername(
         tokenProvider.getUsername(tokenProvider.resolveToken(servlet)));
     if (user.getUsername().equals(info.getUsername())) {
@@ -62,30 +64,48 @@ public class UserService {
     return userRepository.save(user);
   }
 
-  @Transactional(readOnly = true)
-  public Jwt refresh(String username) {
+  @Transactional
+  public Jwt refreshJwt(String username) {
     return tokenProvider.createToken(userDetailsService.loadUserByUsername(username));
   }
 
   @Transactional(readOnly = true)
-  public User me(HttpServletRequest servlet) {
+  public User getUserDetails(HttpServletRequest servlet) {
     return (User) userDetailsService.loadUserByUsername(
         tokenProvider.getUsername(tokenProvider.resolveToken(servlet)));
   }
 
-  public void delete(HttpServletRequest servlet, String username) {
+  public void resignUser(HttpServletRequest servlet, UserDeletion request) {
     User user = (User) userDetailsService.loadUserByUsername(
         tokenProvider.getUsername(tokenProvider.resolveToken(servlet)));
-    if (user.getUsername().equals(username)) {
-      // 자가 삭제
-      userRepository.delete(user);
-    } else if (user.getAuthorities().contains(groupService.getAdminGroup())) {
-      // 관리자 권한으로 삭제
+    if (!user.getUsername().equals(request.getUsername()) || !encoder.matches(request.getPassword(),
+        user.getPassword())) {
+      throw new InvalidRequestException("Invalid username or password");
+    }
+    userRepository.delete(user);
+  }
+
+  public void resignUserByAdmin(HttpServletRequest servlet, String username) {
+    User admin = (User) userDetailsService.loadUserByUsername(
+        tokenProvider.getUsername(tokenProvider.resolveToken(servlet)));
+    if (admin.getAuthorities().contains(groupService.getAdminGroup())) {
       User targetUser = userRepository.findByUsername(username)
           .orElseThrow(() -> new InvalidRequestException("Username not found"));
       userRepository.delete(targetUser);
     } else {
-      throw new ForbiddenException("You are not authorized to delete this user");
+      throw new ForbiddenException("You are not authorized to resign this user");
     }
+  }
+
+  public User getUserByUsername(HttpServletRequest servlet, String username) {
+    return userRepository.findByUsername(username)
+        .orElseThrow(() -> new InvalidRequestException("Username not found"));
+  }
+
+  public User updateUserByAdmin(UserUpdate request) {
+    User user = userRepository.findByUsername(request.getUsername())
+        .orElseThrow(() -> new InvalidRequestException("Username not found"));
+    user.setPassword(encoder.encode(request.getPassword()));
+    return userRepository.save(user);
   }
 }
