@@ -1,24 +1,31 @@
 package kr.or.argos.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import kr.or.argos.domain.common.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,26 +33,28 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
 
+  @Column(unique = true)
   @NotNull
   private String username;
-
+  @JsonIgnore
   @NotNull
   private String password;
-
+  @Column(unique = true)
   @NotNull
   private Integer studentId;
-
   @NotNull
   private String name;
-
-  @ManyToOne
+  @JsonIgnore
   @Builder.Default
-  @JoinColumn(name = "group_id")
-  private Group group = Group.getDefaultGroup();
+  private boolean enabled = true;
+  @JsonBackReference
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private Set<UserGroup> userGroups = new HashSet<>();
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of();
+    return userGroups.stream().map(UserGroup::getGroup).collect(Collectors.toSet());
   }
 
   @Override
@@ -68,8 +77,7 @@ public class User extends BaseEntity implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    // TODO: 계정 활성화 여부 확인
-    return true;
+    return enabled;
   }
 
   @Override
@@ -80,7 +88,7 @@ public class User extends BaseEntity implements UserDetails {
         .append("username", username)
         .append("studentId", studentId)
         .append("name", name)
-        .append("group", group.getName())
+        .append("user_groups", userGroups)
         .append("createdAt", getCreatedAt())
         .append("updatedAt", getUpdatedAt())
         .toString();
