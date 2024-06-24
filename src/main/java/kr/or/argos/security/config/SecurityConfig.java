@@ -41,22 +41,30 @@ public class SecurityConfig {
       throws Exception {
     // @formatter:off
     http
+        // Disable CSRF (cross site request forgery)
         .csrf(AbstractHttpConfigurer::disable)
+        // No session will be created or used by spring security
         .sessionManagement(session ->
             session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(requests ->
             requests
+                // Allow access to Swagger UI
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                // Allow access to user registration and login
                 .requestMatchers("/users/register", "/users/login").permitAll()
-                .requestMatchers("/users/**").hasAuthority(groupService.getUserGroup().getName())
-                .requestMatchers("/admin/users/**").hasAuthority(groupService.getAdminGroup().getName())
+                // Allow access to user APIs only for authenticated users
+                .requestMatchers("/users/**").authenticated()
+                // Allow access to admin APIs only for users with admin authority
+                .requestMatchers("/admin/**").hasAuthority(groupService.getAdminGroup().getName())
+                // Allow access to all other APIs only for authenticated users
                 .anyRequest().authenticated()
         )
         .exceptionHandling(exception ->
             exception
                 .accessDeniedHandler(accessDeniedHandler())
         )
+        // Add JSON Web Token filter
         .addFilterBefore(new JwtRequestFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
     // @formatter:on
     return http.build();

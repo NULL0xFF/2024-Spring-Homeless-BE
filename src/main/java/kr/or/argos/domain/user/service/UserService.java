@@ -1,6 +1,5 @@
 package kr.or.argos.domain.user.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import kr.or.argos.domain.user.dto.UserDeletion;
 import kr.or.argos.domain.user.dto.UserLogin;
 import kr.or.argos.domain.user.dto.UserRegistration;
@@ -8,14 +7,12 @@ import kr.or.argos.domain.user.dto.UserUpdate;
 import kr.or.argos.domain.user.entity.User;
 import kr.or.argos.domain.user.entity.UserGroup;
 import kr.or.argos.domain.user.repository.UserRepository;
-import kr.or.argos.global.exception.ForbiddenException;
 import kr.or.argos.global.exception.InvalidRequestException;
 import kr.or.argos.security.entity.Token;
 import kr.or.argos.security.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,7 +33,7 @@ public class UserService {
   @Transactional
   public Token registerUser(UserRegistration request) {
     // Check if the username already exists
-    if (getUserByUsername(request.getUsername()) != null) {
+    if (userRepository.existsByUsername(request.getUsername())) {
       throw new InvalidRequestException("Username already exists");
     }
 
@@ -64,10 +61,16 @@ public class UserService {
     return tokenService.issueToken(userDetailsService.loadUserByUsername(username));
   }
 
+  @Transactional(readOnly = true)
+  public User getUser(String username) {
+    return userRepository.findByUsername(username)
+        .orElseThrow(() -> new InvalidRequestException("Username not found"));
+  }
+
   @Transactional
-  public User updateUser(HttpServletRequest servlet, UserUpdate info) {
+  public User updateUser(String remoteUsername, UserUpdate info) {
     // Get requester user details
-    User user = getUserByUsername(getUserDetails(servlet).getUsername());
+    User user = getUser(remoteUsername);
 
     // Check if the username matches
     if (user.getUsername().equals(info.getUsername())) {
@@ -83,9 +86,16 @@ public class UserService {
   }
 
   @Transactional
-  public void resignUser(HttpServletRequest servlet, UserDeletion request) {
+  public User updateUserByAdmin(UserUpdate request) {
+    User user = getUser(request.getUsername());
+    user.setPassword(encoder.encode(request.getPassword()));
+    return userRepository.save(user);
+  }
+
+  @Transactional
+  public void resignUser(String remoteUsername, UserDeletion request) {
     // Get requester user details
-    User user = getUserByUsername(getUserDetails(servlet).getUsername());
+    User user = getUser(remoteUsername);
 
     // Check if requester is the user to be deleted
     if (!user.getUsername().equals(request.getUsername()) || !encoder.matches(request.getPassword(),
@@ -98,48 +108,8 @@ public class UserService {
     userRepository.delete(user);
   }
 
-  @Transactional(readOnly = true)
-  public User getUserByAdmin(HttpServletRequest servlet, String username) {
-    if (isUserAdmin(getUserDetails(servlet))) {
-      return getUserByUsername(username);
-    } else {
-      throw new ForbiddenException("You are not authorized to view this user");
-    }
-  }
-
   @Transactional
-  public User updateUserByAdmin(HttpServletRequest servlet, UserUpdate request) {
-    if (isUserAdmin(getUserDetails(servlet))) {
-      User user = getUserByUsername(request.getUsername());
-      user.setPassword(encoder.encode(request.getPassword()));
-      return userRepository.save(user);
-    } else {
-      throw new ForbiddenException("You are not authorized to update this user");
-    }
-  }
-
-  @Transactional
-  public void resignUserByAdmin(HttpServletRequest servlet, String username) {
-    if (isUserAdmin(getUserDetails(servlet))) {
-      userRepository.delete(getUserByUsername(username));
-    } else {
-      throw new ForbiddenException("You are not authorized to resign this user");
-    }
-  }
-
-  @Transactional(readOnly = true)
-  public UserDetails getUserDetails(HttpServletRequest servlet) {
-    return userDetailsService.loadUserByUsername(
-        tokenService.resolveUsername(tokenService.resolveToken(servlet)));
-  }
-
-  @Transactional(readOnly = true)
-  public User getUserByUsername(String username) {
-    return userRepository.findByUsername(username)
-        .orElseThrow(() -> new InvalidRequestException("Username not found"));
-  }
-
-  private boolean isUserAdmin(UserDetails userDetails) {
-    return userDetails.getAuthorities().contains(groupService.getAdminGroup());
+  public void resignUserByAdmin(String username) {
+    userRepository.delete(getUser(username));
   }
 }

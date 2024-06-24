@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import kr.or.argos.domain.user.dto.UserRegistration;
 import kr.or.argos.domain.user.dto.UserUpdate;
 import kr.or.argos.domain.user.entity.User;
@@ -49,9 +48,8 @@ public class UserAdminController {
       @ApiResponse(responseCode = "200", description = "Get user information successful", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> getUserDetails(HttpServletRequest servlet,
-      @PathVariable String username) {
-    return ResponseEntity.ok(userService.getUserByAdmin(servlet, username));
+  public ResponseEntity<User> getUserDetails(@PathVariable String username) {
+    return ResponseEntity.ok(userService.getUser(username));
   }
 
   @PatchMapping("/update")
@@ -61,9 +59,8 @@ public class UserAdminController {
       @ApiResponse(responseCode = "200", description = "Update user information successful", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> updateUser(HttpServletRequest servlet,
-      @RequestBody UserUpdate request) {
-    return ResponseEntity.ok(userService.updateUserByAdmin(servlet, request));
+  public ResponseEntity<User> updateUser(@RequestBody UserUpdate request) {
+    return ResponseEntity.ok(userService.updateUserByAdmin(request));
   }
 
   @DeleteMapping("/resign/{username}")
@@ -72,9 +69,8 @@ public class UserAdminController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Resign successful", content = @Content),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<Void> resignUser(HttpServletRequest servlet,
-      @PathVariable String username) {
-    userService.resignUserByAdmin(servlet, username);
+  public ResponseEntity<Void> resignUser(@PathVariable String username) {
+    userService.resignUserByAdmin(username);
     return ResponseEntity.ok().build();
   }
 }
