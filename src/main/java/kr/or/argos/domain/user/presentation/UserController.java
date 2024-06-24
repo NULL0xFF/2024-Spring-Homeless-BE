@@ -34,10 +34,7 @@ public class UserController {
   private final UserService userService;
 
   @PostMapping("/register")
-  @Operation(
-      summary = "Register a new user",
-      description = "Endpoint to register a new user in the system. Takes a UserRegistration object as input and returns a JWT if the registration is successful."
-  )
+  @Operation(summary = "Register a new user", description = "Endpoint to register a new user in the system. Takes a UserRegistration object as input and returns a JWT if the registration is successful.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Register successful", content = {
           @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
@@ -47,10 +44,7 @@ public class UserController {
   }
 
   @PostMapping("/login")
-  @Operation(
-      summary = "Login to the system",
-      description = "Endpoint for users to log in. Takes a UserLogin object as input and returns a JWT if authentication is successful."
-  )
+  @Operation(summary = "Login to the system", description = "Endpoint for users to log in. Takes a UserLogin object as input and returns a JWT if authentication is successful.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Login successful", content = {
           @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
@@ -60,10 +54,7 @@ public class UserController {
   }
 
   @GetMapping("/refresh")
-  @Operation(
-      summary = "Refresh JWT",
-      description = "Endpoint to refresh the JSON Web Token for the logged-in user. Returns a new JWT."
-  )
+  @Operation(summary = "Refresh JWT", description = "Endpoint to refresh the JSON Web Token for the logged-in user. Returns a new JWT.")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Refresh token successful", content = {
@@ -75,24 +66,18 @@ public class UserController {
   }
 
   @GetMapping("/me")
-  @Operation(
-      summary = "Get user information",
-      description = "Endpoint to retrieve the information of the logged-in user."
-  )
+  @Operation(summary = "Get user information", description = "Endpoint to retrieve the information of the logged-in user.")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Get user information successful", content = {
           @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> getUserDetails(HttpServletRequest servlet) {
-    return ResponseEntity.ok(userService.getUserByUsername(servlet.getRemoteUser()));
+  public ResponseEntity<User> getUser(HttpServletRequest servlet) {
+    return ResponseEntity.ok(userService.getUser(servlet.getRemoteUser()));
   }
 
   @PatchMapping("/update")
-  @Operation(
-      summary = "Update user information",
-      description = "Endpoint to update the information of the logged-in user. Takes a UserUpdate object as input."
-  )
+  @Operation(summary = "Update user information", description = "Endpoint to update the information of the logged-in user. Takes a UserUpdate object as input.")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Update user information successful", content = {
@@ -100,21 +85,18 @@ public class UserController {
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
   public ResponseEntity<User> updateUser(HttpServletRequest servlet,
       @RequestBody UserUpdate request) {
-    return ResponseEntity.ok(userService.updateUser(servlet, request));
+    return ResponseEntity.ok(userService.updateUser(servlet.getRemoteUser(), request));
   }
 
   @DeleteMapping("/resign")
-  @Operation(
-      summary = "Resign",
-      description = "Endpoint for the logged-in user to resign from the system. Takes a UserDeletion object as input along with the JWT."
-  )
+  @Operation(summary = "Resign", description = "Endpoint for the logged-in user to resign from the system. Takes a UserDeletion object as input along with the JWT.")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Resign successful", content = @Content),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
   public ResponseEntity<Void> resignUser(HttpServletRequest servlet,
       @RequestBody UserDeletion request) {
-    userService.resignUser(servlet, request);
+    userService.resignUser(servlet.getRemoteUser(), request);
     return ResponseEntity.ok().build();
   }
 }
