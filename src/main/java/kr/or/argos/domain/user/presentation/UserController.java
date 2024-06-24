@@ -43,7 +43,7 @@ public class UserController {
           @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
   public ResponseEntity<String> registerUser(@RequestBody UserRegistration request) {
-    return ResponseEntity.ok(userService.registerUser(request).toString());
+    return ResponseEntity.ok(userService.registerUser(request).toTokenString().toString());
   }
 
   @PostMapping("/login")
