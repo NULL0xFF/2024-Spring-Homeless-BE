@@ -1,5 +1,6 @@
 package kr.or.argos.domain.common.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +24,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EqualsAndHashCode(of = "id")
 public abstract class BaseEntity {
 
+  @JsonIgnore
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;

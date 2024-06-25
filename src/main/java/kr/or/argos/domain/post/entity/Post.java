@@ -1,65 +1,62 @@
 package kr.or.argos.domain.post.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import kr.or.argos.domain.comment.entity.Comment;
+import kr.or.argos.domain.common.entity.BaseEntity;
 import kr.or.argos.domain.user.entity.User;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = {"id"}, callSuper = false)
-public class Post {
+@AllArgsConstructor
+@Table(name = "posts")
+public class Post extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Column(unique = true)
+  @NotNull
+  private String identifier;
 
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments = new ArrayList<>();
+  @NotNull
+  private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @Lob
+  @NotNull
+  private String content;
 
-    @Column(length = 200, nullable = false)
-    private String title;
+  @JsonIncludeProperties("username")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  @NotNull
+  private User user;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
+  @JsonIgnore
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Comment> comments;
 
-    @Column(nullable = false)
-    private long hits;
+  @Builder.Default
+  private Boolean announcement = false;
 
-    @Builder
-    private Post(
-            final User user,
-            final String title,
-            final String content,
-            final long hits
-    ) {
-        this.user = user;
-        this.title = title;
-        this.content = content;
-        this.hits = hits;
-    }
-
-    public void addComment(final Comment comment) {
-        comment.setPost(this);
-        this.comments.add(comment);
-    }
+  @JsonIgnore
+  @OneToMany
+  private List<User> hits;
 }
