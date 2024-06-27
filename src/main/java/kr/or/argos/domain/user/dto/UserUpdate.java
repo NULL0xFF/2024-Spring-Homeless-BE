@@ -2,8 +2,9 @@ package kr.or.argos.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.regex.Pattern;
-import kr.or.argos.global.exception.InvalidRequestException;
+import java.util.Date;
+import kr.or.argos.domain.user.entity.User;
+import kr.or.argos.domain.user.validation.Password;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,38 +12,40 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserUpdate implements UserRequest {
 
-  @NotNull(message = "Enter your username.")
-  @NotBlank(message = "Username cannot be blank.")
+  @NotNull(message = "Username must not be null")
+  @NotBlank(message = "Username must not be blank")
   private String username;
-  @NotNull(message = "Enter your password.")
-  @NotBlank(message = "Password cannot be blank.")
+
+  @NotNull(message = "Password must not be null")
+  @Password
   private String password;
 
-  /**
-   * Ensures the password meets the policy based on NIST SP 800-63B guidelines.
-   * <p>
-   * NIST SP 800-63B 가이드라인을 기반으로 비밀번호 정책을 충족하는지 확인합니다.
-   *
-   * @throws InvalidRequestException if the password does not meet the requirements
-   * @see <a href="https://pages.nist.gov/800-63-3/sp800-63b.html">NIST SP 800-63B</a>
-   */
-  private void validatePassword() {
-    Pattern passwordPattern = Pattern.compile(
-        "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{12,}$");
-    if (!passwordPattern.matcher(password).matches()) {
-      throw new InvalidRequestException(
-          "Password must be at least 12 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character.");
-    }
-  }
+  private String email;
 
-  @Override
-  public void validate() {
-    if (username == null || username.isEmpty()) {
-      throw new InvalidRequestException("Username is missing");
+  private Integer studentId;
+
+  private String surname;
+
+  private String forename;
+
+  private Date birthday;
+
+  public void updateEntity(User user) {
+    user.setPassword(password);
+    if (email != null) {
+      user.setEmail(email);
     }
-    if (password == null || password.isEmpty()) {
-      throw new IllegalArgumentException("Password is missing");
+    if (studentId != null) {
+      user.setStudentId(studentId);
     }
-    validatePassword();
+    if (surname != null) {
+      user.setSurname(surname);
+    }
+    if (forename != null) {
+      user.setForename(forename);
+    }
+    if (birthday != null) {
+      user.setBirthday(birthday);
+    }
   }
 }

@@ -1,5 +1,6 @@
 package kr.or.argos.security.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import kr.or.argos.domain.user.service.GroupService;
 import kr.or.argos.security.filter.JwtRequestFilter;
 import kr.or.argos.security.service.TokenService;
@@ -15,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -60,18 +60,20 @@ public class SecurityConfig {
                 // Allow access to all other APIs only for authenticated users
                 .anyRequest().authenticated()
         )
-        .exceptionHandling(exception ->
-            exception
-                .accessDeniedHandler(accessDeniedHandler())
+        .exceptionHandling(handler ->
+            handler
+                .authenticationEntryPoint(
+                    (request, response, authException) ->
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
+                )
+                .accessDeniedHandler(
+                    (request, response, accessDeniedException) ->
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+                )
         )
         // Add JSON Web Token filter
         .addFilterBefore(new JwtRequestFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
     // @formatter:on
     return http.build();
-  }
-
-  @Bean
-  public AccessDeniedHandler accessDeniedHandler() {
-    return (request, response, accessDeniedException) -> response.sendRedirect("/users/login");
   }
 }

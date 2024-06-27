@@ -99,26 +99,6 @@ public class TokenService {
     return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload().getSubject();
   }
 
-  /**
-   * @deprecated Use {@link #issueToken(UserDetails)} instead
-   */
-  @Transactional
-  public Token createToken(UserDetails userDetails) {
-    Date now = new Date();
-    Date expiration = new Date(now.getTime() + expireLength);
-    return Token.createFromTokenString(userDetails.getUsername(),
-        // @formatter:off
-        Jwts.builder()
-            .subject(userDetails.getUsername())
-            .claim("auth", userDetails.getAuthorities())
-            .issuedAt(now)
-            .expiration(expiration)
-            .signWith(key)
-            .compact()
-        // @formatter:on
-    );
-  }
-
   @Transactional(readOnly = true)
   public Authentication getAuthentication(String token) {
     UserDetails userDetails = myUserDetails.loadUserByUsername(resolveUsername(token));
