@@ -1,5 +1,6 @@
 package kr.or.argos.security.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,17 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import kr.or.argos.security.service.TokenService;
 import lombok.NonNull;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
   private final TokenService tokenService;
-
-  public JwtRequestFilter(TokenService tokenService) {
-    this.tokenService = tokenService;
-  }
 
   @Override
   protected void doFilterInternal(@NonNull HttpServletRequest httpServletRequest,
@@ -33,14 +31,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         tokenService.validateToken(token);
         SecurityContextHolder.getContext().setAuthentication(tokenService.getAuthentication(token));
       }
-    } catch (JwtException | IllegalArgumentException ex) {
-      // If the token is invalid, clear the context and send an error response
-      SecurityContextHolder.clearContext();
-      httpServletResponse.sendError(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-      return;
-    }
 
-    // Continue the filter chain
-    filterChain.doFilter(httpServletRequest, httpServletResponse);
+      // Continue the filter chain
+      filterChain.doFilter(httpServletRequest, httpServletResponse);
+    } catch (ExpiredJwtException e) {
+      // If the token is expired, clear the security context and return a 400 status code
+      SecurityContextHolder.clearContext();
+      httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      httpServletResponse.setContentType("plain/text");
+      httpServletResponse.getWriter().write("Expired token");
+    } catch (JwtException | IllegalArgumentException e) {
+      // If the token is invalid, clear the security context and return a 400 status code
+      SecurityContextHolder.clearContext();
+      httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      httpServletResponse.setContentType("plain/text");
+      httpServletResponse.getWriter().write("Invalid token");
+    }
   }
 }

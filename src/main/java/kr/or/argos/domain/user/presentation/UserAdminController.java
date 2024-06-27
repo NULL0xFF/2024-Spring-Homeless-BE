@@ -7,9 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import kr.or.argos.domain.user.dto.UserRecord;
 import kr.or.argos.domain.user.dto.UserRegistration;
 import kr.or.argos.domain.user.dto.UserUpdate;
-import kr.or.argos.domain.user.entity.User;
 import kr.or.argos.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,7 @@ public class UserAdminController {
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Register successful", content = @Content),
       @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
-  public ResponseEntity<String> registerUser(@RequestBody UserRegistration request) {
+  public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegistration request) {
     userService.registerUser(request);
     return ResponseEntity.ok("User registered successfully");
   }
@@ -46,10 +47,10 @@ public class UserAdminController {
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Get user information successful", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserRecord.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> getUserDetails(@PathVariable String username) {
-    return ResponseEntity.ok(userService.getUser(username));
+  public ResponseEntity<UserRecord> getUserDetails(@PathVariable String username) {
+    return ResponseEntity.ok(userService.getUser(username).toRecord());
   }
 
   @PatchMapping("/update")
@@ -57,10 +58,10 @@ public class UserAdminController {
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Update user information successful", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserRecord.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> updateUser(@RequestBody UserUpdate request) {
-    return ResponseEntity.ok(userService.updateUserByAdmin(request));
+  public ResponseEntity<UserRecord> updateUser(@RequestBody UserUpdate request) {
+    return ResponseEntity.ok(userService.updateUserByAdmin(request).toRecord());
   }
 
   @DeleteMapping("/resign/{username}")

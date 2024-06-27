@@ -68,14 +68,14 @@ public class UserService {
   }
 
   @Transactional
-  public User updateUser(String remoteUsername, UserUpdate info) {
+  public User updateUser(String remoteUsername, UserUpdate request) {
     // Get requester user details
     User user = getUser(remoteUsername);
 
     // Check if the username matches
-    if (user.getUsername().equals(info.getUsername())) {
-      // Update the password
-      user.setPassword(encoder.encode(info.getPassword()));
+    if (user.getUsername().equals(request.getUsername())) {
+      // Update user entity with non-null variables
+      request.updateEntity(user, encoder);
     } else {
       // If not, throw an exception
       throw new InvalidRequestException("Username does not match");
@@ -88,7 +88,7 @@ public class UserService {
   @Transactional
   public User updateUserByAdmin(UserUpdate request) {
     User user = getUser(request.getUsername());
-    user.setPassword(encoder.encode(request.getPassword()));
+    request.updateEntity(user, encoder);
     return userRepository.save(user);
   }
 

@@ -1,10 +1,14 @@
 package kr.or.argos.domain.user.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.regex.Pattern;
+import jakarta.validation.constraints.PastOrPresent;
+import java.util.Date;
 import kr.or.argos.domain.user.entity.User;
-import kr.or.argos.global.exception.InvalidRequestException;
+import kr.or.argos.domain.user.validation.Password;
+import kr.or.argos.domain.user.validation.StudentId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,74 +17,45 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @AllArgsConstructor
 public class UserRegistration implements UserRequest {
 
-  @NotNull(message = "Enter an username.")
-  @NotBlank(message = "Username cannot be blank.")
+  @NotNull(message = "Username must not be null")
+  @NotBlank(message = "Username must not be blank")
   private String username;
-  @NotNull(message = "Enter a password.")
-  @NotBlank(message = "Password cannot be blank.")
+
+  @NotNull(message = "Password must not be null")
+  @Password
   private String password;
-  @NotNull(message = "Enter a student ID.")
+
+  @NotNull(message = "Email must not be null")
+  @Email
+  private String email;
+
+  @NotNull(message = "Student ID must not be null")
+  @StudentId
   private Integer studentId;
-  @NotNull(message = "Enter a name.")
-  @NotBlank(message = "Name cannot be blank.")
-  private String name;
+
+  @NotNull(message = "Surname must not be null")
+  private String surname;
+
+  @NotNull(message = "Forename must not be null")
+  @NotBlank(message = "Forename must not be blank")
+  private String forename;
+
+  @NotNull(message = "Birthday must not be null")
+  @PastOrPresent(message = "Birthday must be a date in the past or in the present")
+  @Schema(type = "string", format = "date", example = "yyyy-MM-dd")
+  private Date birthday;
 
   public User toEntity(PasswordEncoder encoder) {
-    validate();
     // @formatter:off
     return User.builder()
         .username(username)
         .password(encoder.encode(password))
+        .email(email)
         .studentId(studentId)
-        .name(name)
+        .surname(surname)
+        .forename(forename)
+        .birthday(birthday)
         .build();
     // @formatter:on
-  }
-
-  private void validateField(String field, String fieldName) {
-    if (field == null || field.isEmpty()) {
-      throw new InvalidRequestException(fieldName + " is missing");
-    }
-  }
-
-  /**
-   * Ensures the password meets the policy based on NIST SP 800-63B guidelines.
-   * <p>
-   * NIST SP 800-63B 가이드라인을 기반으로 비밀번호 정책을 충족하는지 확인합니다.
-   *
-   * @throws InvalidRequestException if the password does not meet the requirements
-   * @see <a href="https://pages.nist.gov/800-63-3/sp800-63b.html">NIST SP 800-63B</a>
-   */
-  private void validatePassword() {
-    Pattern passwordPattern = Pattern.compile(
-        "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{12,}$");
-    if (!passwordPattern.matcher(password).matches()) {
-      throw new InvalidRequestException(
-          "Password must be at least 12 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character.");
-    }
-  }
-
-  /**
-   * Ensures the student ID is 9 digits.
-   */
-  private void validateStudentId() {
-    Pattern studentIdPattern = Pattern.compile("[1-9][0-9]{8}");
-    if (!studentIdPattern.matcher(studentId.toString()).matches()) {
-      throw new InvalidRequestException("Student ID must be 9 digits.");
-    }
-  }
-
-  @Override
-  public void validate() {
-    // Check if the fields are empty or null
-    validateField(username, "Username");
-    validateField(password, "Password");
-    validateField(name, "Name");
-    if (studentId == null) {
-      throw new InvalidRequestException("Student ID is missing");
-    }    // Check if the password meets the requirements
-    validatePassword();
-    // Check if the student ID meets the requirements
-    validateStudentId();
   }
 }

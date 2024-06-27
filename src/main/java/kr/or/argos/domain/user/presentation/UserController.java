@@ -8,11 +8,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import kr.or.argos.domain.user.dto.UserDeletion;
 import kr.or.argos.domain.user.dto.UserLogin;
+import kr.or.argos.domain.user.dto.UserRecord;
 import kr.or.argos.domain.user.dto.UserRegistration;
 import kr.or.argos.domain.user.dto.UserUpdate;
-import kr.or.argos.domain.user.entity.User;
 import kr.or.argos.domain.user.service.UserService;
 import kr.or.argos.security.dto.TokenString;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class UserController {
       @ApiResponse(responseCode = "200", description = "Register successful", content = {
           @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content)})
-  public ResponseEntity<String> registerUser(@RequestBody UserRegistration request) {
+  public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegistration request) {
     return ResponseEntity.ok(userService.registerUser(request).toTokenString().toString());
   }
 
@@ -49,7 +50,7 @@ public class UserController {
       @ApiResponse(responseCode = "200", description = "Login successful", content = {
           @Content(mediaType = "plain/text", schema = @Schema(implementation = TokenString.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<String> loginUser(@RequestBody UserLogin request) {
+  public ResponseEntity<String> loginUser(@Valid @RequestBody UserLogin request) {
     return ResponseEntity.ok(userService.loginUser(request).toTokenString().toString());
   }
 
@@ -70,10 +71,10 @@ public class UserController {
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Get user information successful", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserRecord.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> getUser(HttpServletRequest servlet) {
-    return ResponseEntity.ok(userService.getUser(servlet.getRemoteUser()));
+  public ResponseEntity<UserRecord> getUser(HttpServletRequest servlet) {
+    return ResponseEntity.ok(userService.getUser(servlet.getRemoteUser()).toRecord());
   }
 
   @PatchMapping("/update")
@@ -81,11 +82,11 @@ public class UserController {
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Update user information successful", content = {
-          @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))}),
+          @Content(mediaType = "application/json", schema = @Schema(implementation = UserRecord.class))}),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
-  public ResponseEntity<User> updateUser(HttpServletRequest servlet,
-      @RequestBody UserUpdate request) {
-    return ResponseEntity.ok(userService.updateUser(servlet.getRemoteUser(), request));
+  public ResponseEntity<UserRecord> updateUser(HttpServletRequest servlet,
+      @Valid @RequestBody UserUpdate request) {
+    return ResponseEntity.ok(userService.updateUser(servlet.getRemoteUser(), request).toRecord());
   }
 
   @DeleteMapping("/resign")
@@ -95,7 +96,7 @@ public class UserController {
       @ApiResponse(responseCode = "200", description = "Resign successful", content = @Content),
       @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)})
   public ResponseEntity<Void> resignUser(HttpServletRequest servlet,
-      @RequestBody UserDeletion request) {
+      @Valid @RequestBody UserDeletion request) {
     userService.resignUser(servlet.getRemoteUser(), request);
     return ResponseEntity.ok().build();
   }
