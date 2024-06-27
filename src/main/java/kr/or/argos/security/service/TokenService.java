@@ -1,11 +1,11 @@
 package kr.or.argos.security.service;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import kr.or.argos.global.exception.InvalidTokenException;
 import kr.or.argos.security.entity.Token;
 import kr.or.argos.security.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +65,7 @@ public class TokenService {
 
     // Check if the token is valid
     if (!storedToken.toTokenString().toString().equals(token)) {
-      throw new InvalidTokenException("Invalid token");
+      throw new JwtException("Invalid token");
     }
   }
 
