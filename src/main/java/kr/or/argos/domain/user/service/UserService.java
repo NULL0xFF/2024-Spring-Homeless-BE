@@ -75,7 +75,7 @@ public class UserService {
     // Check if the username matches
     if (user.getUsername().equals(request.getUsername())) {
       // Update user entity with non-null variables
-      request.updateEntity(user);
+      request.updateEntity(user, encoder);
     } else {
       // If not, throw an exception
       throw new InvalidRequestException("Username does not match");
@@ -88,7 +88,7 @@ public class UserService {
   @Transactional
   public User updateUserByAdmin(UserUpdate request) {
     User user = getUser(request.getUsername());
-    request.updateEntity(user);
+    request.updateEntity(user, encoder);
     return userRepository.save(user);
   }
 

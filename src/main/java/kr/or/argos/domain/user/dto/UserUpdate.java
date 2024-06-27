@@ -7,6 +7,7 @@ import kr.or.argos.domain.user.entity.User;
 import kr.or.argos.domain.user.validation.Password;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Getter
 @AllArgsConstructor
@@ -30,8 +31,10 @@ public class UserUpdate implements UserRequest {
 
   private Date birthday;
 
-  public void updateEntity(User user) {
-    user.setPassword(password);
+  public void updateEntity(User user, PasswordEncoder encoder) {
+    if (password != null) {
+      user.setPassword(encoder.encode(password));
+    }
     if (email != null) {
       user.setEmail(email);
     }
