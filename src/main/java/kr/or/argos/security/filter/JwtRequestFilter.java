@@ -30,9 +30,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       if (token != null) {
         tokenService.validateToken(token);
         SecurityContextHolder.getContext().setAuthentication(tokenService.getAuthentication(token));
-        // Continue the filter chain
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
       }
+
+      // Continue the filter chain
+      filterChain.doFilter(httpServletRequest, httpServletResponse);
     } catch (ExpiredJwtException e) {
       // If the token is expired, clear the security context and return a 400 status code
       SecurityContextHolder.clearContext();

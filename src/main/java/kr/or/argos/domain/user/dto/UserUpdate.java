@@ -17,7 +17,6 @@ public class UserUpdate implements UserRequest {
   @NotBlank(message = "Username must not be blank")
   private String username;
 
-  @NotNull(message = "Password must not be null")
   @Password
   private String password;
 
